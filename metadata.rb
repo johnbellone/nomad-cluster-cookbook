@@ -1,0 +1,16 @@
+name 'nomad-cluster'
+maintainer 'John Bellone'
+maintainer_email 'jbellone@bloomberg.net'
+description 'Application cookbook which installs and configures Redis.'
+long_description 'Application cookbook which installs and configures Redis.'
+version '2.0.0'
+source_url 'https://github.com/bloomberg/nomad-cluster-cookbook'
+issues_url 'https://github.com/bloomberg/nomad-cluster-cookbook/issues'
+
+supports 'redhat', '>= 5.8'
+supports 'centos', '>= 5.8'
+supports 'ubuntu', '>= 12.04'
+
+depends 'poise', '~> 2.6'
+depends 'poise-archive', '~> 1.2'
+depends 'poise-service', '~> 1.0'
