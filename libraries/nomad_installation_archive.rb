@@ -1,8 +1,8 @@
 #
-# Cookbook: nomad
+# Cookbook: nomad-cluster
 # License: Apache 2.0
 #
-# Copyright 2015-2016, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 require 'poise'
 
@@ -30,37 +30,16 @@ module NomadClusterCookbook
                     archive_checksum: default_archive_checksum(node, resource))
       end
 
-      def action_create
-        url = options[:archive_url] % {version: options[:version], basename: options[:archive_basename]}
-        notifying_block do
-          directory nomad_base do
-            recursive true
-          end
-
-          poise_archive ::File.basename(url) do
-            path ::File.join(Chef::Config[:file_cache_path], name)
-            destination nomad_base
-            strip_components 0
-          end
-        end
-      end
-
-      def action_remove
-        directory nomad_base do
-          recursive true
-          action :delete
-        end
+      # @return [String]
+      # @api private
+      def nomad_program
+        options.fetch(:program, ::File.join(static_folder, 'bin', 'nomad'))
       end
 
       # @return [String]
       # @api private
-      def nomad_base
+      def static_folder
         ::File.join(options[:prefix], new_resource.version)
-      end
-
-      # @return [String]
-      def nomad_program
-        options.fetch(:program, ::File.join(nomad_base, 'nomad'))
       end
 
       # @param [Chef::Node] node
@@ -110,7 +89,29 @@ module NomadClusterCookbook
           end
         end
       end
-    end
 
+      private
+
+      def install_nomad
+        directory options[:prefix] do
+          recursive true
+        end
+
+        url = options[:archive_url] % { version: options[:version], basename: options[:archive_basename] }
+        poise_archive url do
+          destination static_folder
+          source_properties checksum: options[:archive_checksum]
+          strip_components 0
+          not_if { ::File.exist?(nomad_program) }
+        end
+      end
+
+      def uninstall_nomad
+        directory static_folder do
+          recursive true
+          action :delete
+        end
+      end
+    end
   end
 end
